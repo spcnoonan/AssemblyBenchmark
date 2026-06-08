@@ -39,32 +39,27 @@ set -e
 #  These are paths that you will be required to change to suit your particular paths
 #.......................................................
 # Path to the benchmark folder
-WORKINGDIR=
+WORKINGDIR=/storage/users/cnoonan22/experiments/EXP0011/benchmark/testing
 # Path to accessory scripts
-SCRIPTS=
-# Path to folder paths
-DIR_PATHS=
+SCRIPTS=/storage/users/cnoonan22/experiments/EXP0011/benchmark/testing/scripts
+# Path to date paths file
+DIR_PATHS=/storage/users/cnoonan22/experiments/EXP0011/benchmark/testing/data_paths.txt
 # Path to DNA CS sequence
 DNACS=/storage/users/cnoonan22/experiments/EXP0011/data/dna_cs.fasta
 # Number of threads
 THREADS="48"
-# Model used for basecalling (must be converted to Medaka wording)
-MODEL=/storage/users/cnoonan22/scratch/basecalling/r1041_e82_400bps_sup_v5.0.0_model_pt.tar.gz 
 # Path to BUSCO lineage file
-LINEAGE=/storage/users/cnoonan22/tool_testing/busco_test/busco_downloads/lineages/coccidia_odb10
+LINEAGE=/storage/users/cnoonan22/experiments/EXP0011/data/busco/busco_downloads/lineages/coccidia_odb12
 # Path to Dorado bin
-DORADO=/storage/users/cnoonan22/bin/dorado-0.7.1-linux-x64/bin/dorado
+DORADO=/storage/users/cnoonan22/experiments/EXP0011/bin/dorado-2.0.0-linux-x64/bin/dorado
+# Path to Flye
+FLYE=/storage/users/cnoonan22/experiments/EXP0011/bin/Flye-2.9.6/bin/flye
 # Date
 DATE=$(date +%y%m%d)
 
 #........................................................
 #			CHECKS
 #........................................................
-
-echo "activating assembly micromamba environment..."
-module load apps/anaconda-4.7.12.tcl
-unset PYTHONPATH
-
 
 cd $WORKINGDIR
 echo "Your working directory is currently ${WORKINGDIR}"
@@ -84,24 +79,54 @@ while read -r data_paths; do
     ### Extract species name from end of path ###
     SPECIES=$(echo "$data_paths" | rev | cut -d"/" -f1 | rev)
 
+    # Setting genome size based on ID (account for capitalisation) - chosen based on initial assemblies
+    if [[ "$SPECIES" == "necatrix" ]]; then
+        GENOME_SIZE=58000000
+    elif [[ "$SPECIES" == "brunetti" ]]; then
+        GENOME_SIZE=77000000
+    elif [[ "$SPECIES" == "mitis" ]]; then
+        GENOME_SIZE=72000000
+    elif [[ "$SPECIES" == "lata" ]]; then
+        GENOME_SIZE=50000000
+    elif [[ "$SPECIES" == "zaria" ]]; then
+        GENOME_SIZE=60000000
+    else
+        echo "ID doesn't match any of the species."
+        exit 1
+    fi
+
     #### Check for which file types are present and set HIFI flag as positive if folder not empty####
-    ### Check if output exists. Will skip species if it is (should allow for multiple script submissions)###
     ### Setting path to read files and flagging if absent###
-    NANOPORE=
-    PACBIO=
+    PACBIO=""
+    for file in "${data_paths}"/pacbio/*.fastq.gz; do
+        if [[ -f "$file" ]]; then
+            PACBIO="$file"
+            break
+        fi
+    done
+
+    NANOPORE=$(find "$data_paths" -maxdepth 2 -type f -name "*_SUP.fastq.gz")
+
+    echo "PACBIO = '$PACBIO'"
+
+    ### Check if output exists. Will skip species if it is (should allow for multiple script submissions)###
+    SPECIES_OUT=${WORKINGDIR}/${SPECIES}
+
+    if [[ -d "$SPECIES_OUT" ]]; then
+        echo "Skipping $SPECIES: output directory already exists"
+        continue
+    fi
 
     ### Make output folder for everything for each species ###
-    SPECIES_OUT=${WORKINGDIR}/${SPECIES}
     mkdir -p ${SPECIES_OUT}
     mkdir -p ${SPECIES_OUT}/LOGS
     mkdir -p ${SPECIES_OUT}/STATS
 
     cd $SPECIES_OUT
 
-
     ### Begin initial read processing
     READPROCESS=${SPECIES_OUT}/ReadProcessing
-    mkdir -p $READFILTER
+    mkdir -p $READPROCESS
     mkdir -p ${SPECIES_OUT}/STATS/ReadProcessing
     cd $READPROCESS
 
@@ -121,7 +146,7 @@ while read -r data_paths; do
     mkdir -p ${SPECIES_OUT}/STATS/ReadFiltering
     cd $READFILTER
 
-    readfilter="${SCRIPTS}/filtering.sh ${SPECIES_OUT}/ReadProcessing/${SPECIES}_QualityFilteredReads.fastq $SPECIES $THREADS ${SPECIES_OUT}/STATS/ReadFiltering2>&1 | tee ${SPECIES_OUT}/LOGS/Filtering.log"
+    readfilter="${SCRIPTS}/filtering.sh ${SPECIES_OUT}/ReadProcessing/${SPECIES}_PreProcessedReads.fastq.gz $SPECIES $THREADS $PACBIO $GENOME_SIZE ${SPECIES_OUT}/STATS/ReadFiltering 2>&1 | tee ${SPECIES_OUT}/LOGS/Filtering.log"
     echo $readfilter
     echo
     eval $readfilter
@@ -137,7 +162,7 @@ while read -r data_paths; do
     mkdir -p ${SPECIES_OUT}/STATS/Assembly
     cd $ASSEMBLY
 
-    denovoassembly="${SCRIPTS}/assembly.sh ${SPECIES_OUT}/ReadFiltering/ $SPECIES $THREADS $LINEAGE ${SPECIES_OUT}/STATS/Assembly 2>&1 | tee ${SPECIES_OUT}/LOGS/Assembly.log"
+    denovoassembly="${SCRIPTS}/flye.sh $READFILTER $SPECIES $THREADS $LINEAGE $GENOME_SIZE ${SPECIES_OUT}/STATS/Assembly $PACBIO $FLYE 2>&1 | tee ${SPECIES_OUT}/LOGS/Assembly.log"
     echo $denovoassembly
     echo
     eval $denovoassembly

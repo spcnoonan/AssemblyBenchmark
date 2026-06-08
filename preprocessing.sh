@@ -3,7 +3,7 @@
 #.................................................................................................................
 #											SET PATHS BASED ON FLAGS
 #.................................................................................................................
-input=$1 # path to the  fastq files to process
+input=$1 # path to the nanopore fastq files to process
 dorado=$2 # path to Dorado
 id=$3 # name for output files
 dnacs=$4 # path to DNA CS fasta file
@@ -11,6 +11,12 @@ threads=$5 # number of threads
 stats=$6 # path to stats folder
 
 set -e
+
+echo "activating bench_preprocess micromamba environment..."
+unset PYTHONPATH
+source /storage/users/cnoonan22/micromamba/etc/profile.d/mamba.sh
+micromamba activate /storage/users/cnoonan22/micromamba/envs/bench_preprocess
+echo
 
 
 # Read splitting for memory purposes
@@ -30,7 +36,7 @@ for file in split*; do
     echo "Beginning Dorado ..."
     $dorado trim temp/${file}_FilteredReads1.fastq.gz | samtools fastq -@ $threads > temp/${file}_FilteredReads2.fastq
     echo "Beginning Chopper ..."
-    chopper -l 1000 -q 10 -i temp/${file}_FilteredReads2.fastq | gzip > temp/${file}_FilteredReads3.fastq.gz
+    filtlong --min_length 1000 --min_mean_q 10 temp/${file}_FilteredReads2.fastq | gzip > temp/${file}_FilteredReads3.fastq.gz
     echo "Quality trimming complete."
     echo "Removing file $file ..."
     rm $file temp/${file}_FilteredReads1.fastq.gz temp/${file}_FilteredReads2.fastq
@@ -42,9 +48,9 @@ cat temp/*_FilteredReads3.fastq.gz > temp/Merged_FilteredReads.fastq.gz
 
 # DNA CS removal
 echo "Removing DNA CS sequences from reads ..."
-minimap2 -ax lr:hq $dnacs temp/Merged_FilteredReads.fastq.gz -t $threads | samtools view  -f 4 -@ $threads -b - | samtools sort -@ $threads | samtools fastq -@ $threads > ${id}_QualityFilteredReads.fastq
-NanoPlot -t $threads --verbose -p $id -o $stats/ReadProcessing/NanoPlot --plots dot --N50 --fastq ${id}_QualityFilteredReads.fastq
-bgzip ${id}_QualityFilteredReads.fastq
+minimap2 -ax lr:hq $dnacs temp/Merged_FilteredReads.fastq.gz -t $threads | samtools view  -f 4 -@ $threads -b - | samtools sort -@ $threads | samtools fastq -@ $threads > ${id}_PreProcessedReads.fastq
+NanoPlot -t $threads --verbose -p $id -o $stats/ReadProcessing/NanoPlot --plots dot --N50 --fastq ${id}_PreProcessedReads.fastq
+bgzip ${id}_PreProcessedReads.fastq
 
 # Removing temp files
 rm -r temp/

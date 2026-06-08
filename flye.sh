@@ -4,23 +4,26 @@
 #											SET PATHS BASED ON FLAGS
 #.................................................................................................................
 filt_dir=$1 # path to the folder containing filtered reads
-threads=$2 # number of threads
-id=$3 # id to use for files
+id=$2 # id to use for files
+threads=$3 # number of threads
 lineage=$4 # path to BUSCO lineage
-stats=$5 # path to stats folder
-pacbio=$6
+genome_size=$5 # genome size
+stats=$6 # path to stats folder
+pacbio=$7 # path to pacbio reads
+flye=$8 # path to flye exe
 
 set -e
 
+echo "activating bench_assm micromamba environment..."
+unset PYTHONPATH
+source /storage/users/cnoonan22/micromamba/etc/profile.d/mamba.sh
+micromamba activate /storage/users/cnoonan22/micromamba/envs/bench_assm
+echo
+
 # Creating sub-directories
 mkdir -p FLYE
-mkdir -p HIFIASM
+mkdir -p FLYE/NANOPORE
 mkdir -p $stats/BUSCO
-
-# Setting genome size based on ID
-genome_size=
-echo "Genome size: ${genome_size}"
-echo
 
 # For loop to run through the results of find
 # Directories etc will be extracted from file paths because they're descriptive
@@ -28,40 +31,68 @@ echo
 for reads in $(find "$filt_dir" -type f -name "*.fastq.gz"); do
 
     # Extracting the filtering criteria used from file path
-    FILTER_PARAMS=
+    FILTER_PARAMS=$(basename "$reads" | cut -d"_" -f2,3 | sed 's/.fastq.gz//g')
 
     # Making sub-directories
-    mkdir -p FLYE/${FILTER_PARAMS}
-    mkdir -p HIFIASM/${FILTER_PARAMS}
+    mkdir -p FLYE/NANOPORE/${FILTER_PARAMS}
 
     ## Running FLYE
     echo
     echo "Running Flye for ${FILTER_PARAMS} reads..."
     echo
-    flye --nano-hq $reads --genome-size $genome_size --threads $threads --out-dir FLYE/${id}_${FILTER_PARAMS}
+    $flye --nano-hq $reads --genome-size $genome_size --threads $threads --out-dir FLYE/NANOPORE/${id}_${FILTER_PARAMS}
 
     # Generating stats
     echo
     echo "Generating stats ..."
     echo
-    assembly-stats FLYE/${id}_${FILTER_PARAMS}/assembly.fasta > $stats/Assembly/${id}_${FILTER_PARAMS}_stats.txt
-    busco -m genome -l $lineage -i FLYE/${id}_${FILTER_PARAMS}/assembly.fasta -o ${id}_${FILTER_PARAMS}_BUSCO --offline
+    quast.py FLYE/NANOPORE/${id}_${FILTER_PARAMS}/assembly.fasta -o $stats/${id}_${FILTER_PARAMS}_QUAST --threads $threads --nanopore $reads
+    busco -m genome -l $lineage -i FLYE/NANOPORE/${id}_${FILTER_PARAMS}/assembly.fasta -o ${id}_${FILTER_PARAMS}_BUSCO --offline
     mv ${id}_${FILTER_PARAMS}_BUSCO $stats/BUSCO
-
-    # Running FLYE for hifi daya if $pacbio contains a file, otherwise returns a warning
-    # Run using just nanopore, just pacbio, and hybrid
-
+    minimap2 -ax lr:hq $reads FLYE/NANOPORE/${id}_${FILTER_PARAMS}/assembly.fasta -t $threads | samtools view -b -@ $threads - | samtools sort -@ $threads -o cov.bam
+    samtools flagstat -@ $threads cov.bam > $stats/${id}_${FILTER_PARAMS}.flagstats
+    samtools coverage cov.bam > $stats/${id}_${FILTER_PARAMS}.cov
+    rm cov.bam
     echo
-    echo "Running Flye for ${FILTER_PARAMS} using Hifi reads..."
-    echo
-    flye --pacbio-hifi $pacbio --genome-size $genome_size --threads $threads --out-dir FLYE/${id}_${FILTER_PARAMS}_HIFI
-
-    # Generating stats
-    echo
-    echo "Generating stats ..."
-    echo
-    assembly-stats FLYE/${id}_${FILTER_PARAMS}_HIFI/assembly.fasta > $stats/Assembly/${id}_${FILTER_PARAMS}_HIFI_stats.txt
-    busco -m genome -l $lineage -i FLYE/${id}_${FILTER_PARAMS}_HIFI/assembly.fasta -o ${id}_${FILTER_PARAMS}_HIFI_BUSCO --offline
-    mv ${id}_${FILTER_PARAMS}_HIFI_BUSCO $stats/BUSCO
-
+    echo "Stats obtained. Moving on to next assembly ..."
 done
+
+# Running FLYE for hifi data if $pacbio contains a file, otherwise returns a warning
+
+if [[ -n "$pacbio" ]]; then
+    echo "Found PacBio file: $pacbio"
+    mkdir -p FLYE/HIFI
+
+    for reads in $(find ../PacbioFiltering -type f -name "*.fastq.gz"); do
+
+        # Extracting the filtering criteria used from file path
+        FILTER_PARAMS=$(basename "$reads" | cut -d"_" -f2,3 | sed 's/_HIFI.fastq.gz//g')
+
+        # Making sub-directories
+        mkdir -p FLYE/HIFI/${FILTER_PARAMS}
+
+        ## Running FLYE
+        echo
+        echo echo "Running Flye for ${FILTER_PARAMS} using Hifi reads..."
+        echo
+        $flye --pacbio-hifi $reads --genome-size $genome_size --threads $threads --out-dir FLYE/HIFI/${id}_${FILTER_PARAMS}_HIFI
+
+
+        # Generating stats
+        echo
+        echo "Generating stats ..."
+        echo
+        quast.py FLYE/HIFI/${id}_${FILTER_PARAMS}_HIFI/assembly.fasta -o $stats/${id}_${FILTER_PARAMS}_QUAST --threads $threads --nanopore $reads
+        busco -m genome -l $lineage -i FLYE/HIFI/${id}_${FILTER_PARAMS}_HIFI/assembly.fasta -o ${id}_${FILTER_PARAMS}_HIFI_BUSCO --offline
+        mv ${id}_${FILTER_PARAMS}_HIFI_BUSCO $stats/BUSCO
+        minimap2 -ax lr:hq $reads FLYE/HIFI/${id}_${FILTER_PARAMS}_HIFI/assembly.fasta -t $threads | samtools view -b -@ $threads - | samtools sort -@ $threads -o cov.bam
+        samtools flagstat -@ $threads cov.bam > $stats/${id}_${FILTER_PARAMS}_HIFI.flagstats
+        samtools coverage cov.bam > $stats/${id}_${FILTER_PARAMS}_HIFI.cov
+        rm cov.bam
+        echo
+        echo "Stats obtained. Moving on to next assembly ..."
+    done
+    
+else
+    echo "No PacBio file found; skipping PacBio analysis"
+fi

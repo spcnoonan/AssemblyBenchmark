@@ -3,12 +3,20 @@
 #.................................................................................................................
 #											SET PATHS BASED ON FLAGS
 #.................................................................................................................
-input=$1 # path to the fastq file to filter
+input=$1 # path to the nanopore fastq file to filter
 id=$2 # name for output files
 threads=$3 # number of threads
-stats=$4 # path to stats folder
+pacbio=$4 # path to pacbio reads
+genome_size=$5 # genome size
+stats=$6 # path to stats folder
 
 set -e
+
+echo "activating bench_preprocess micromamba environment..."
+unset PYTHONPATH
+source /storage/users/cnoonan22/micromamba/etc/profile.d/mamba.sh
+micromamba activate /storage/users/cnoonan22/micromamba/envs/bench_preprocess
+echo
 
 ## Creating output folders
 
@@ -25,12 +33,12 @@ mkdir -p 100XREADS/LengthWeight
 mkdir -p 100XREADS/QualityWeight
 
 ## Setting 50X and 100X lengths based on $id value so species-specific genome sizes can be used
-base_size_100x=
-base_size_50x=
+base_size_100x=$(( $genome_size * 100 ))
+base_size_50x=$(( $genome_size * 50 ))
 
 echo "100X genome size: ${base_size_100x}"
 echo
-echo "500X genome size: ${base_size_50x}"
+echo "50X genome size: ${base_size_50x}"
 echo
 
 ## Running filtlong
@@ -42,7 +50,7 @@ filtlong --target_bases ${base_size_50x} ${input} | gzip > 50XREADS/Default/${id
 echo
 echo "Filtering complete for 50X_DEFAULT_NANOPLOT. Obtaining stats ..."
 echo
-NanoPlot -t $threads --verbose -p $id -o $stats/ReadFiltering/50X_DEFAULT_NANOPLOT --plots dot --N50 --fastq 50XREADS/Default/${id}_50X_Default.fastq.gz
+NanoPlot -t $threads --verbose -p $id -o $stats/50X_DEFAULT_NANOPLOT --plots dot --N50 --fastq 50XREADS/Default/${id}_50X_Default.fastq.gz
 echo
 echo "Stats generated for 50X_DEFAULT_NANOPLOT"
 echo
@@ -52,7 +60,7 @@ filtlong --target_bases ${base_size_50x} --length_weight 10 ${input} | gzip > 50
 echo
 echo "Filtering complete for 50X_LENGTHWEIGHT_NANOPLOT. Obtaining stats ..."
 echo
-NanoPlot -t $threads --verbose -p $id -o $stats/ReadFiltering/50X_LENGTHWEIGHT_NANOPLOT --plots dot --N50 --fastq 50XREADS/LengthWeight/${id}_50X_LengthWeight.fastq.gz
+NanoPlot -t $threads --verbose -p $id -o $stats/50X_LENGTHWEIGHT_NANOPLOT --plots dot --N50 --fastq 50XREADS/LengthWeight/${id}_50X_LengthWeight.fastq.gz
 echo
 echo "Stats generated for 50X_LENGTHWEIGHT_NANOPLOT"
 echo
@@ -62,7 +70,7 @@ filtlong --target_bases ${base_size_50x} --length_weight 0 --window_q_weight 0 $
 echo
 echo "Filtering complete for 50X_QUALWEIGHT_NANOPLOT. Obtaining stats ..."
 echo
-NanoPlot -t $threads --verbose -p $id -o $stats/ReadFiltering/50X_QUALWEIGHT_NANOPLOT --plots dot --N50 --fastq 50XREADS/QualityWeight/${id}_50X_QualityWeight.fastq.gz
+NanoPlot -t $threads --verbose -p $id -o $stats/50X_QUALWEIGHT_NANOPLOT --plots dot --N50 --fastq 50XREADS/QualityWeight/${id}_50X_QualityWeight.fastq.gz
 echo
 echo "Stats generated for 50X_QUALWEIGHT_NANOPLOT"
 echo
@@ -74,7 +82,7 @@ filtlong --target_bases ${base_size_100x} ${input} | gzip > 100XREADS/Default/${
 echo
 echo "Filtering complete for 100X_DEFAULT_NANOPLOT. Obtaining stats ..."
 echo
-NanoPlot -t $threads --verbose -p $id -o $stats/ReadFiltering/100X_DEFAULT_NANOPLOT --plots dot --N50 --fastq 100XREADS/Default/${id}_100X_Default.fastq.gz
+NanoPlot -t $threads --verbose -p $id -o $stats/100X_DEFAULT_NANOPLOT --plots dot --N50 --fastq 100XREADS/Default/${id}_100X_Default.fastq.gz
 echo
 echo "Stats generated for 100X_DEFAULT_NANOPLOT"
 echo
@@ -84,7 +92,7 @@ filtlong --target_bases ${base_size_100x} --length_weight 10 ${input} | gzip > 1
 echo
 echo "Filtering complete for 100X_LENGTHWEIGHT_NANOPLOT. Obtaining stats ..."
 echo
-NanoPlot -t $threads --verbose -p $id -o $stats/ReadFiltering/100X_LENGTHWEIGHT_NANOPLOT --plots dot --N50 --fastq 100XREADS/LengthWeight/${id}_100X_LengthWeight.fastq.gz
+NanoPlot -t $threads --verbose -p $id -o $stats/100X_LENGTHWEIGHT_NANOPLOT --plots dot --N50 --fastq 100XREADS/LengthWeight/${id}_100X_LengthWeight.fastq.gz
 echo
 echo "Stats generated for 100X_LENGTHWEIGHT_NANOPLOT"
 echo
@@ -94,7 +102,94 @@ filtlong --target_bases ${base_size_100x} --length_weight 0 --window_q_weight 0 
 echo
 echo "Filtering complete for 100X_QUALWEIGHT_NANOPLOT. Obtaining stats ..."
 echo
-NanoPlot -t $threads --verbose -p $id -o $stats/ReadFiltering/100X_QUALWEIGHT_NANOPLOT --plots dot --N50 --fastq 100XREADS/QualityWeight/${id}_100X_QualityWeight.fastq.gz
+NanoPlot -t $threads --verbose -p $id -o $stats/100X_QUALWEIGHT_NANOPLOT --plots dot --N50 --fastq 100XREADS/QualityWeight/${id}_100X_QualityWeight.fastq.gz
 echo
 echo "Stats generated for 100X_QUALWEIGHT_NANOPLOT"
 echo
+
+###############################################################
+#           If there are PacBio reads also ...                #
+###############################################################
+
+if [[ -n "$pacbio" ]]; then
+
+    # Creating separate output
+    mkdir -p ../PacbioFiltering
+    cat "$input" "$pacbio" | gzip > ../PacbioFiltering/NP_PB_combined.fastq.gz
+
+    # Subset 1: 50X reads
+    mkdir -p ../PacbioFiltering/50XREADS
+    mkdir -p ../PacbioFiltering/50XREADS/Default
+    mkdir -p ../PacbioFiltering/50XREADS/LengthWeight
+    mkdir -p ../PacbioFiltering/50XREADS/QualityWeight
+
+    # Subset 2: 100X reads
+    mkdir -p ../PacbioFiltering/100XREADS
+    mkdir -p ../PacbioFiltering/100XREADS/Default
+    mkdir -p ../PacbioFiltering/100XREADS/LengthWeight
+    mkdir -p ../PacbioFiltering/100XREADS/QualityWeight
+
+    # Default settings
+    filtlong --target_bases ${base_size_50x} ../PacbioFiltering/NP_PB_combined.fastq.gz | gzip > ../PacbioFiltering/50XREADS/Default/${id}_50X_Default_HIFI.fastq.gz
+    echo
+    echo "Filtering complete for 50X_DEFAULT_NANOPLOT. Obtaining stats ..."
+    echo
+    NanoPlot -t $threads --verbose -p $id -o $stats/HIFI_50X_DEFAULT_NANOPLOT --plots dot --N50 --fastq ../PacbioFiltering/50XREADS/Default/${id}_50X_Default_HIFI.fastq.gz
+    echo
+    echo "Stats generated for 50X_DEFAULT_NANOPLOT"
+    echo
+
+    # Length weight
+    filtlong --target_bases ${base_size_50x} --length_weight 10 ../PacbioFiltering/NP_PB_combined.fastq.gz | gzip > ../PacbioFiltering/50XREADS/LengthWeight/${id}_50X_LengthWeight_HIFI.fastq.gz
+    echo
+    echo "Filtering complete for 50X_LENGTHWEIGHT_NANOPLOT. Obtaining stats ..."
+    echo
+    NanoPlot -t $threads --verbose -p $id -o $stats/HIFI_50X_LENGTHWEIGHT_NANOPLOT --plots dot --N50 --fastq ../PacbioFiltering/50XREADS/LengthWeight/${id}_50X_LengthWeight_HIFI.fastq.gz
+    echo
+    echo "Stats generated for 50X_LENGTHWEIGHT_NANOPLOT"
+    echo
+
+    # Quality weight 
+    filtlong --target_bases ${base_size_50x} --length_weight 0 --window_q_weight 0 ../PacbioFiltering/NP_PB_combined.fastq.gz | gzip > ../PacbioFiltering/50XREADS/QualityWeight/${id}_50X_QualityWeight_HIFI.fastq.gz
+    echo
+    echo "Filtering complete for 50X_QUALWEIGHT_NANOPLOT. Obtaining stats ..."
+    echo
+    NanoPlot -t $threads --verbose -p $id -o $stats/HIFI_50X_QUALWEIGHT_NANOPLOT --plots dot --N50 --fastq ../PacbioFiltering/50XREADS/QualityWeight/${id}_50X_QualityWeight_HIFI.fastq.gz
+    echo
+    echo "Stats generated for 50X_QUALWEIGHT_NANOPLOT"
+    echo
+
+    ## Subset 2
+
+    # Default settings
+    filtlong --target_bases ${base_size_100x} ../PacbioFiltering/NP_PB_combined.fastq.gz | gzip > ../PacbioFiltering/100XREADS/Default/${id}_100X_Default_HIFI.fastq.gz
+    echo
+    echo "Filtering complete for 100X_DEFAULT_NANOPLOT. Obtaining stats ..."
+    echo
+    NanoPlot -t $threads --verbose -p $id -o $stats/HIFI_100X_DEFAULT_NANOPLOT --plots dot --N50 --fastq ../PacbioFiltering/100XREADS/Default/${id}_100X_Default_HIFI.fastq.gz
+    echo
+    echo "Stats generated for 100X_DEFAULT_NANOPLOT"
+    echo
+
+    # Length weight
+    filtlong --target_bases ${base_size_100x} --length_weight 10 ../PacbioFiltering/NP_PB_combined.fastq.gz | gzip > ../PacbioFiltering/100XREADS/LengthWeight/${id}_100X_LengthWeight_HIFI.fastq.gz
+    echo
+    echo "Filtering complete for 100X_LENGTHWEIGHT_NANOPLOT. Obtaining stats ..."
+    echo
+    NanoPlot -t $threads --verbose -p $id -o $stats/HIFI_100X_LENGTHWEIGHT_NANOPLOT --plots dot --N50 --fastq ../PacbioFiltering/100XREADS/LengthWeight/${id}_100X_LengthWeight_HIFI.fastq.gz
+    echo
+    echo "Stats generated for 100X_LENGTHWEIGHT_NANOPLOT"
+    echo
+
+    # Quality weight 
+    filtlong --target_bases ${base_size_100x} --length_weight 0 --window_q_weight 0 ../PacbioFiltering/NP_PB_combined.fastq.gz | gzip > ../PacbioFiltering/100XREADS/QualityWeight/${id}_100X_QualityWeight_HIFI.fastq.gz
+    echo
+    echo "Filtering complete for 100X_QUALWEIGHT_NANOPLOT. Obtaining stats ..."
+    echo
+    NanoPlot -t $threads --verbose -p $id -o $stats/HIFI_100X_QUALWEIGHT_NANOPLOT --plots dot --N50 --fastq ../PacbioFiltering/100XREADS/QualityWeight/${id}_100X_QualityWeight_HIFI.fastq.gz
+    echo
+    echo "Stats generated for 100X_QUALWEIGHT_NANOPLOT"
+    echo
+else
+    echo "No PacBio file found; skipping PacBio analysis"
+fi
