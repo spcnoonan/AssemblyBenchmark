@@ -44,7 +44,7 @@ for reads in $(find "$filt_dir" -type f -name "*.fastq.gz"); do
     echo "Generating stats ..."
     echo
     quast.py FLYE/NANOPORE/${id}_${FILTER_PARAMS}/assembly.fasta -o $stats/${id}_${FILTER_PARAMS}_QUAST --threads $threads --nanopore $reads
-    busco -m genome -l $lineage -i FLYE/NANOPORE/${id}_${FILTER_PARAMS}/assembly.fasta -o ${id}_${FILTER_PARAMS}_BUSCO --offline
+    busco -m genome -l $lineage -i FLYE/NANOPORE/${id}_${FILTER_PARAMS}/assembly.fasta -o ${id}_${FILTER_PARAMS}_BUSCO --offline -c $threads
     mv ${id}_${FILTER_PARAMS}_BUSCO $stats/BUSCO
     minimap2 -ax lr:hq $reads FLYE/NANOPORE/${id}_${FILTER_PARAMS}/assembly.fasta -t $threads | samtools view -b -@ $threads - | samtools sort -@ $threads -o cov.bam
     samtools flagstat -@ $threads cov.bam > $stats/${id}_${FILTER_PARAMS}.flagstats
@@ -80,7 +80,7 @@ if [[ -n "$pacbio" ]]; then
         echo "Generating stats ..."
         echo
         quast.py FLYE/HIFI/${id}_${FILTER_PARAMS}_HIFI/assembly.fasta -o $stats/${id}_${FILTER_PARAMS}_QUAST --threads $threads --nanopore $reads
-        busco -m genome -l $lineage -i FLYE/HIFI/${id}_${FILTER_PARAMS}_HIFI/assembly.fasta -o ${id}_${FILTER_PARAMS}_HIFI_BUSCO --offline
+        busco -m genome -l $lineage -i FLYE/HIFI/${id}_${FILTER_PARAMS}_HIFI/assembly.fasta -o ${id}_${FILTER_PARAMS}_HIFI_BUSCO --offline -c $threads
         mv ${id}_${FILTER_PARAMS}_HIFI_BUSCO $stats/BUSCO
         minimap2 -ax lr:hq $reads FLYE/HIFI/${id}_${FILTER_PARAMS}_HIFI/assembly.fasta -t $threads | samtools view -b -@ $threads - | samtools sort -@ $threads -o cov.bam
         samtools flagstat -@ $threads cov.bam > $stats/${id}_${FILTER_PARAMS}_HIFI.flagstats

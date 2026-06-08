@@ -109,7 +109,7 @@ if [[ -n "$pacbio" ]]; then
 
     # Creating separate output
     mkdir -p ../PacbioFiltering
-    cat "$input" "$pacbio" | gzip > ../PacbioFiltering/NP_PB_combined.fastq.gz
+    cat "$input" "$pacbio" | gzip > ../PacbioFiltering/${id}_NP_PB_combined_HIFI.fastq.gz
 
     # Subset 1: 50X reads
     mkdir -p ../PacbioFiltering/50XREADS
@@ -118,7 +118,7 @@ if [[ -n "$pacbio" ]]; then
     mkdir -p ../PacbioFiltering/100XREADS
 
     # Default settings
-    filtlong --target_bases ${base_size_50x} ../PacbioFiltering/NP_PB_combined.fastq.gz | gzip > ../PacbioFiltering/50XREADS/${id}_50X_Default_HIFI.fastq.gz
+    filtlong --target_bases ${base_size_50x} ../PacbioFiltering/${id}_NP_PB_combined_HIFI.fastq.gz | gzip > ../PacbioFiltering/50XREADS/${id}_50X_Default_HIFI.fastq.gz
     echo
     echo "Filtering complete for 50X_DEFAULT_NANOPLOT. Obtaining stats ..."
     echo
@@ -128,7 +128,7 @@ if [[ -n "$pacbio" ]]; then
     echo
 
     # Length weight
-    filtlong --target_bases ${base_size_50x} --length_weight 10 ../PacbioFiltering/NP_PB_combined.fastq.gz | gzip > ../PacbioFiltering/50XREADS/${id}_50X_LengthWeight_HIFI.fastq.gz
+    filtlong --target_bases ${base_size_50x} --length_weight 10 ../PacbioFiltering/${id}_NP_PB_combined_HIFI.fastq.gz | gzip > ../PacbioFiltering/50XREADS/${id}_50X_LengthWeight_HIFI.fastq.gz
     echo
     echo "Filtering complete for 50X_LENGTHWEIGHT_NANOPLOT. Obtaining stats ..."
     echo
@@ -138,7 +138,7 @@ if [[ -n "$pacbio" ]]; then
     echo
 
     # Quality weight 
-    filtlong --target_bases ${base_size_50x} --length_weight 0 --window_q_weight 0 ../PacbioFiltering/NP_PB_combined.fastq.gz | gzip > ../PacbioFiltering/50XREADS/${id}_50X_QualityWeight_HIFI.fastq.gz
+    filtlong --target_bases ${base_size_50x} --length_weight 0 --window_q_weight 0 ../PacbioFiltering/${id}_NP_PB_combined_HIFI.fastq.gz | gzip > ../PacbioFiltering/50XREADS/${id}_50X_QualityWeight_HIFI.fastq.gz
     echo
     echo "Filtering complete for 50X_QUALWEIGHT_NANOPLOT. Obtaining stats ..."
     echo
@@ -150,7 +150,7 @@ if [[ -n "$pacbio" ]]; then
     ## Subset 2
 
     # Default settings
-    filtlong --target_bases ${base_size_100x} ../PacbioFiltering/NP_PB_combined.fastq.gz | gzip > ../PacbioFiltering/100XREADS/${id}_100X_Default_HIFI.fastq.gz
+    filtlong --target_bases ${base_size_100x} ../PacbioFiltering/${id}_NP_PB_combined_HIFI.fastq.gz | gzip > ../PacbioFiltering/100XREADS/${id}_100X_Default_HIFI.fastq.gz
     echo
     echo "Filtering complete for 100X_DEFAULT_NANOPLOT. Obtaining stats ..."
     echo
@@ -160,7 +160,7 @@ if [[ -n "$pacbio" ]]; then
     echo
 
     # Length weight
-    filtlong --target_bases ${base_size_100x} --length_weight 10 ../PacbioFiltering/NP_PB_combined.fastq.gz | gzip > ../PacbioFiltering/100XREADS/${id}_100X_LengthWeight_HIFI.fastq.gz
+    filtlong --target_bases ${base_size_100x} --length_weight 10 ../PacbioFiltering/${id}_NP_PB_combined_HIFI.fastq.gz | gzip > ../PacbioFiltering/100XREADS/${id}_100X_LengthWeight_HIFI.fastq.gz
     echo
     echo "Filtering complete for 100X_LENGTHWEIGHT_NANOPLOT. Obtaining stats ..."
     echo
@@ -170,7 +170,7 @@ if [[ -n "$pacbio" ]]; then
     echo
 
     # Quality weight 
-    filtlong --target_bases ${base_size_100x} --length_weight 0 --window_q_weight 0 ../PacbioFiltering/NP_PB_combined.fastq.gz | gzip > ../PacbioFiltering/100XREADS/${id}_100X_QualityWeight_HIFI.fastq.gz
+    filtlong --target_bases ${base_size_100x} --length_weight 0 --window_q_weight 0 ../PacbioFiltering/${id}_NP_PB_combined_HIFI.fastq.gz | gzip > ../PacbioFiltering/100XREADS/${id}_100X_QualityWeight_HIFI.fastq.gz
     echo
     echo "Filtering complete for 100X_QUALWEIGHT_NANOPLOT. Obtaining stats ..."
     echo
