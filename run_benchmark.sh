@@ -51,7 +51,7 @@ THREADS="48"
 # Path to BUSCO lineage file
 LINEAGE=/storage/users/cnoonan22/experiments/EXP0011/data/busco/busco_downloads/lineages/coccidia_odb12
 # Path to Dorado bin
-DORADO=/storage/users/cnoonan22/experiments/EXP0011/bin/dorado-2.0.0-linux-x64/bin/dorado
+DORADO=/storage/users/cnoonan22/experiments/EXP0011/bin/dorado-0.7.1-linux-x64/bin/dorado
 # Path to Flye
 FLYE=/storage/users/cnoonan22/experiments/EXP0011/bin/Flye-2.9.6/bin/flye
 # Date
