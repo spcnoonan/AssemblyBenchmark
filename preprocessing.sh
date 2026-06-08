@@ -12,10 +12,10 @@ stats=$6 # path to stats folder
 
 set -e
 
-echo "activating bench_preprocess micromamba environment..."
+echo "activating assembly micromamba environment..."
 unset PYTHONPATH
 source /storage/users/cnoonan22/micromamba/etc/profile.d/mamba.sh
-micromamba activate /storage/users/cnoonan22/micromamba/envs/bench_preprocess
+micromamba activate /storage/users/cnoonan22/micromamba/envs/assembly
 echo
 
 
