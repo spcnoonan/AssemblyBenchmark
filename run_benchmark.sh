@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=benchmark_test
-#SBATCH --output=/storage/users/cnoonan22/experiments/EXP0011/benchmark/testing/benchmark.log
+#SBATCH --output=/storage/users/cnoonan22/experiments/EXP0011/benchmark/benchmark.log
 #SBATCH --mem=80000
 #SBATCH --cpus-per-task=64
 
@@ -39,11 +39,11 @@ set -e
 #  These are paths that you will be required to change to suit your particular paths
 #.......................................................
 # Path to the benchmark folder
-WORKINGDIR=/storage/users/cnoonan22/experiments/EXP0011/benchmark/testing
+WORKINGDIR=/storage/users/cnoonan22/experiments/EXP0011/benchmark
 # Path to accessory scripts
-SCRIPTS=/storage/users/cnoonan22/experiments/EXP0011/benchmark/testing/scripts
+SCRIPTS=/storage/users/cnoonan22/experiments/EXP0011/benchmark/scripts
 # Path to date paths file
-DIR_PATHS=/storage/users/cnoonan22/experiments/EXP0011/benchmark/testing/data_paths.txt
+DIR_PATHS=/storage/users/cnoonan22/experiments/EXP0011/benchmark/org_paths.txt
 # Path to DNA CS sequence
 DNACS=/storage/users/cnoonan22/experiments/EXP0011/data/dna_cs.fasta
 # Number of threads
