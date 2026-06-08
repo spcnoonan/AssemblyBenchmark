@@ -130,7 +130,7 @@ while read -r data_paths; do
     mkdir -p ${SPECIES_OUT}/STATS/ReadProcessing
     cd $READPROCESS
 
-    preprocessing="${SCRIPTS}/preprocessing.sh $NANOPORE $DORADO $SPECIES $DNACS $THREADS ${SPECIES_OUT}/STATS/ReadProcessing 2>&1 | tee ${SPECIES_OUT}/LOGS/PreProcessing.log"
+    preprocessing="${SCRIPTS}/preprocessing.sh $NANOPORE $SPECIES $DNACS $THREADS ${SPECIES_OUT}/STATS/ReadProcessing 2>&1 | tee ${SPECIES_OUT}/LOGS/PreProcessing.log"
     echo $preprocessing
     echo
     eval $preprocessing

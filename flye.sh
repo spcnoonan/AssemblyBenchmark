@@ -33,9 +33,6 @@ for reads in $(find "$filt_dir" -type f -name "*.fastq.gz"); do
     # Extracting the filtering criteria used from file path
     FILTER_PARAMS=$(basename "$reads" | cut -d"_" -f2,3 | sed 's/.fastq.gz//g')
 
-    # Making sub-directories
-    mkdir -p FLYE/NANOPORE/${FILTER_PARAMS}
-
     ## Running FLYE
     echo
     echo "Running Flye for ${FILTER_PARAMS} reads..."

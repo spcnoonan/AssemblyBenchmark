@@ -4,11 +4,10 @@
 #											SET PATHS BASED ON FLAGS
 #.................................................................................................................
 input=$1 # path to the nanopore fastq files to process
-dorado=$2 # path to Dorado
-id=$3 # name for output files
-dnacs=$4 # path to DNA CS fasta file
-threads=$5 # number of threads
-stats=$6 # path to stats folder
+id=$2 # name for output files
+dnacs=$3 # path to DNA CS fasta file
+threads=$4 # number of threads
+stats=$5 # path to stats folder
 
 set -e
 
