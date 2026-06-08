@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name=mitis_assembly
-#SBATCH --output=/storage/users/cnoonan22/experiments/EXP0011/testrun/mitis_pipeline/assembly.log
-#SBATCH --mem=100000
+#SBATCH --job-name=benchmark_test
+#SBATCH --output=/storage/users/cnoonan22/experiments/EXP0011/benchmark/testing/benchmark.log
+#SBATCH --mem=80000
 #SBATCH --cpus-per-task=64
 
 set -e
