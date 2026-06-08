@@ -109,7 +109,7 @@ if [[ -n "$pacbio" ]]; then
 
     # Creating separate output
     mkdir -p ../PacbioFiltering
-    cat "$input" "$pacbio" | gzip > ../PacbioFiltering/${id}_NP_PB_combined_HIFI.fastq.gz
+    cat "$input" "$pacbio" > ../PacbioFiltering/${id}_NP_PB_combined_HIFI.fastq.gz
 
     # Subset 1: 50X reads
     mkdir -p ../PacbioFiltering/50XREADS
