@@ -33,16 +33,21 @@ for file in split*; do
     echo
     echo "Beginning Porechop ..."
     porechop -i $file -o temp/${file}_FilteredReads1.fastq.gz --threads $threads
+    echo
+    echo "Renaming duplicate IDs with seqkit ..."
+    echo
+    seqkit rename temp/${file}_FilteredReads1.fastq.gz --threads $threads > temp/${file}_FilteredReads2.fastq
+    echo
     echo "Beginning Chopper ..."
-    $filtlong --min_length 1000 --min_mean_q 10 temp/${file}_FilteredReads1.fastq.gz | gzip > temp/${file}_FilteredReads2.fastq.gz
+    $filtlong --min_length 1000 --min_mean_q 10 temp/${file}_FilteredReads2.fastq > temp/${file}_FilteredReads3.fastq
     echo "Quality trimming complete."
     echo "Removing file $file ..."
-    rm $file temp/${file}_FilteredReads1.fastq.gz
+    rm $file temp/${file}_FilteredReads1.fastq temp/${file}_FilteredReads2.fastq
     echo
 
 done
 
-cat temp/*_FilteredReads2.fastq.gz > temp/Merged_FilteredReads.fastq.gz
+cat temp/*_FilteredReads3.fastq.gz > temp/Merged_FilteredReads.fastq.gz
 
 # DNA CS removal
 echo "Removing DNA CS sequences from reads ..."

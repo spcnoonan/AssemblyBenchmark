@@ -8,7 +8,8 @@ id=$2 # name for output files
 threads=$3 # number of threads
 pacbio=$4 # path to pacbio reads
 genome_size=$5 # genome size
-stats=$6 # path to stats folder
+filtlong=$6 # path to filtlong bin
+stats=$7 # path to stats folder
 
 set -e
 
