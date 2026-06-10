@@ -47,11 +47,11 @@ for file in split*; do
 
 done
 
-cat temp/*_FilteredReads3.fastq.gz > temp/Merged_FilteredReads.fastq.gz
+cat temp/*_FilteredReads3.fastq > temp/Merged_FilteredReads.fastq
 
 # DNA CS removal
 echo "Removing DNA CS sequences from reads ..."
-minimap2 -ax lr:hq $dnacs temp/Merged_FilteredReads.fastq.gz -t $threads | samtools view  -f 4 -@ $threads -b - | samtools sort -@ $threads | samtools fastq -@ $threads > ${id}_PreProcessedReads.fastq
+minimap2 -ax lr:hq $dnacs temp/Merged_FilteredReads.fastq -t $threads | samtools view  -f 4 -@ $threads -b - | samtools sort -@ $threads | samtools fastq -@ $threads > ${id}_PreProcessedReads.fastq
 NanoPlot -t $threads --verbose -p $id -o $stats/ReadProcessing/NanoPlot --plots dot --N50 --fastq ${id}_PreProcessedReads.fastq
 bgzip ${id}_PreProcessedReads.fastq
 
