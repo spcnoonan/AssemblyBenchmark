@@ -148,7 +148,7 @@ while read -r data_paths; do
     mkdir -p ${SPECIES_OUT}/STATS/ReadFiltering
     cd $READFILTER
 
-    readfilter="${SCRIPTS}/filtering.sh ${SPECIES_OUT}/ReadProcessing/${SPECIES}_PreProcessedReads.fastq.gz $SPECIES $THREADS $PACBIO $GENOME_SIZE $FILTLONG ${SPECIES_OUT}/STATS/ReadFiltering 2>&1 | tee ${SPECIES_OUT}/LOGS/Filtering.log"
+    readfilter="${SCRIPTS}/filtering.sh ${SPECIES_OUT}/ReadProcessing/${SPECIES}_PreProcessedReads.fastq.gz $SPECIES $THREADS $GENOME_SIZE $FILTLONG ${SPECIES_OUT}/STATS/ReadFiltering $PACBIO 2>&1 | tee ${SPECIES_OUT}/LOGS/Filtering.log"
     echo $readfilter
     echo
     eval $readfilter
@@ -164,7 +164,7 @@ while read -r data_paths; do
     mkdir -p ${SPECIES_OUT}/STATS/Assembly
     cd $ASSEMBLY
 
-    denovoassembly="${SCRIPTS}/flye.sh $READFILTER $SPECIES $THREADS $LINEAGE $GENOME_SIZE ${SPECIES_OUT}/STATS/Assembly $PACBIO $FLYE 2>&1 | tee ${SPECIES_OUT}/LOGS/Assembly.log"
+    denovoassembly="${SCRIPTS}/flye.sh $READFILTER $SPECIES $THREADS $LINEAGE $GENOME_SIZE ${SPECIES_OUT}/STATS/Assembly $FLYE $PACBIO 2>&1 | tee ${SPECIES_OUT}/LOGS/Assembly.log"
     echo $denovoassembly
     echo
     eval $denovoassembly

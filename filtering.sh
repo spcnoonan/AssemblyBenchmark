@@ -6,10 +6,10 @@
 input=$1 # path to the nanopore fastq file to filter
 id=$2 # name for output files
 threads=$3 # number of threads
-pacbio=$4 # path to pacbio reads
-genome_size=$5 # genome size
-filtlong=$6 # path to filtlong bin
-stats=$7 # path to stats folder
+genome_size=$4 # path to pacbio reads
+filtlong=$5 # genome size
+stats=$6 # path to filtlong bin
+pacbio=$7 # path to stats folder
 
 set -e
 

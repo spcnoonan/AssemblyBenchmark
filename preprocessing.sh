@@ -38,11 +38,11 @@ for file in split*; do
     echo
     seqkit rename temp/${file}_FilteredReads1.fastq.gz --threads $threads > temp/${file}_FilteredReads2.fastq
     echo
-    echo "Beginning Chopper ..."
+    echo "Beginning Filtlong ..."
     $filtlong --min_length 1000 --min_mean_q 10 temp/${file}_FilteredReads2.fastq > temp/${file}_FilteredReads3.fastq
     echo "Quality trimming complete."
     echo "Removing file $file ..."
-    rm $file temp/${file}_FilteredReads1.fastq temp/${file}_FilteredReads2.fastq
+    rm $file temp/${file}_FilteredReads1.fastq.gz temp/${file}_FilteredReads2.fastq
     echo
 
 done
@@ -52,7 +52,7 @@ cat temp/*_FilteredReads3.fastq > temp/Merged_FilteredReads.fastq
 # DNA CS removal
 echo "Removing DNA CS sequences from reads ..."
 minimap2 -ax lr:hq $dnacs temp/Merged_FilteredReads.fastq -t $threads | samtools view  -f 4 -@ $threads -b - | samtools sort -@ $threads | samtools fastq -@ $threads > ${id}_PreProcessedReads.fastq
-NanoPlot -t $threads --verbose -p $id -o $stats/ReadProcessing/NanoPlot --plots dot --N50 --fastq ${id}_PreProcessedReads.fastq
+NanoPlot -t $threads --verbose -p $id -o $stats/ReadProcessing/NanoPlot --plots dot --N50 --no_static --fastq ${id}_PreProcessedReads.fastq
 bgzip ${id}_PreProcessedReads.fastq
 
 # Removing temp files

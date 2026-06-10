@@ -9,8 +9,8 @@ threads=$3 # number of threads
 lineage=$4 # path to BUSCO lineage
 genome_size=$5 # genome size
 stats=$6 # path to stats folder
-pacbio=$7 # path to pacbio reads
-flye=$8 # path to flye exe
+flye=$7 # path to pacbio reads
+pacbio=$8 # path to flye exe
 
 set -e
 
