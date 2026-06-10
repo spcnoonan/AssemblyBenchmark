@@ -7,7 +7,8 @@ input=$1 # path to the nanopore fastq files to process
 id=$2 # name for output files
 dnacs=$3 # path to DNA CS fasta file
 threads=$4 # number of threads
-stats=$5 # path to stats folder
+filtlong=$5 # path to filtlong
+stats=$6 # path to stats folder
 
 set -e
 
@@ -33,7 +34,7 @@ for file in split*; do
     echo "Beginning Porechop ..."
     porechop -i $file -o temp/${file}_FilteredReads1.fastq.gz --threads $threads
     echo "Beginning Chopper ..."
-    filtlong --min_length 1000 --min_mean_q 10 temp/${file}_FilteredReads1.fastq.gz | gzip > temp/${file}_FilteredReads2.fastq.gz
+    $filtlong --min_length 1000 --min_mean_q 10 temp/${file}_FilteredReads1.fastq.gz | gzip > temp/${file}_FilteredReads2.fastq.gz
     echo "Quality trimming complete."
     echo "Removing file $file ..."
     rm $file temp/${file}_FilteredReads1.fastq.gz

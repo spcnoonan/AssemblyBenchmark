@@ -54,6 +54,8 @@ LINEAGE=/storage/users/cnoonan22/experiments/EXP0011/data/busco/busco_downloads/
 DORADO=/storage/users/cnoonan22/experiments/EXP0011/bin/dorado-0.7.1-linux-x64/bin/dorado
 # Path to Flye
 FLYE=/storage/users/cnoonan22/experiments/EXP0011/bin/Flye-2.9.6/bin/flye
+# Path to Filtlong
+FILTLONG=/storage/users/cnoonan22/experiments/EXP0011/bin/Filtlong/bin/filtlong
 # Date
 DATE=$(date +%y%m%d)
 
@@ -130,7 +132,7 @@ while read -r data_paths; do
     mkdir -p ${SPECIES_OUT}/STATS/ReadProcessing
     cd $READPROCESS
 
-    preprocessing="${SCRIPTS}/preprocessing.sh $NANOPORE $SPECIES $DNACS $THREADS ${SPECIES_OUT}/STATS/ReadProcessing 2>&1 | tee ${SPECIES_OUT}/LOGS/PreProcessing.log"
+    preprocessing="${SCRIPTS}/preprocessing.sh $NANOPORE $SPECIES $DNACS $THREADS $FILTLONG ${SPECIES_OUT}/STATS/ReadProcessing 2>&1 | tee ${SPECIES_OUT}/LOGS/PreProcessing.log"
     echo $preprocessing
     echo
     eval $preprocessing
