@@ -81,7 +81,7 @@ echo "Your total stats will be stored in ${STATS}"
 
 echo "activating bench_pol conda environment..."
 unset PYTHONPATH
-source /home/lab101/anaconda3/etc/profile.d/conda.sh
+source ~/path/to/conda/etc/profile.d/mamba.sh
 conda activate bench_pol
 echo
 
