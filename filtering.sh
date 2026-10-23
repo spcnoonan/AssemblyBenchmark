@@ -15,8 +15,8 @@ set -e
 
 echo "activating bench_preprocess micromamba environment..."
 unset PYTHONPATH
-source /storage/users/cnoonan22/micromamba/etc/profile.d/mamba.sh
-micromamba activate /storage/users/cnoonan22/micromamba/envs/bench_preprocess
+source ~/path/to/micromamba/etc/profile.d/mamba.sh
+micromamba activate bench_preprocess
 echo
 
 ## Creating output folders
