@@ -14,8 +14,8 @@ set -e
 
 echo "activating assembly micromamba environment..."
 unset PYTHONPATH
-source /storage/users/cnoonan22/micromamba/etc/profile.d/mamba.sh
-micromamba activate /storage/users/cnoonan22/micromamba/envs/assembly
+source ~/path/to/micromamba/etc/profile.d/mamba.sh
+micromamba activate assembly
 echo
 
 
