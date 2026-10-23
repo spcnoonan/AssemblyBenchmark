@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --job-name=benchmark_test
-#SBATCH --output=/storage/users/cnoonan22/experiments/EXP0011/benchmark/benchmark.log
+#SBATCH --job-name=
+#SBATCH --output=
 #SBATCH --mem=80000
 #SBATCH --cpus-per-task=64
 
@@ -9,7 +9,7 @@ set -e
 
 ##################################################################################################################################################################
 ##																																							    
-##								***	Script for the assembly benchmark of Eimeria genomes using Nanopore ligation sequencing reads and Illumina Paired-End       
+##								***	Script for the Flye assembly benchmark of Eimeria genomes using Nanopore ligation sequencing reads and Illumina Paired-End       
 ##                                  Reads ***		    				                                                                                        
 ##															     Version 1.0																			
 ##																																																					##
@@ -23,10 +23,15 @@ set -e
 ##										4. Generation of comparative assembly stats with BUSCO, assembly-stats, anvio-dev, 																
 ##																																																						
 ##																																								
-##																																								
+##								Assemblies were also generated using Masurca, but this was done in a separate script and is not included in this benchmark. 
+##                              The Masurca assemblies were used for comparison with the Flye assemblies.
+##
+##                              Species name is extracted from the end of the path to the data folder, so the folder structure should be as follows:
+##                              /path/to/data/species_name
+##																													
 ##								For the setup of the pipeline, modify the paths below accordingly. This script has been prepared for submission to a			
-##								SLURM workload manager, so change the parameters above as necessary. The full pipeline requires two environments: 'assembly' 	
-##								and mitohivi_env. These can be installed via conda using the .yml environment files in the GitHub repo.							
+##								SLURM workload manager, so change the parameters above as necessary. The full pipeline requires the assembly environment.
+#                               This can be installed via conda using the .yml environment files in the GitHub repo.							
 ##								For best results, the data should be basecalled	using the latest super high accuracy model from Dorado.             			
 ##																																							    
 ##								This first version of the script and is subject to modifications if they have been shown to improve the final assembly.     	
@@ -71,6 +76,12 @@ STATS=${WORKINGDIR}/Stats
 mkdir -p $STATS
 
 echo "Your total stats will be stored in ${STATS}"
+
+echo "activating assembly conda environment..."
+unset PYTHONPATH
+source /home/lab101/anaconda3/etc/profile.d/conda.sh
+conda activate assembly
+echo
 
 #................................................................
 #			   BEGINNING BENCHMARK
