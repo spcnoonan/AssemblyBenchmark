@@ -79,7 +79,7 @@ echo "Your total stats will be stored in ${STATS}"
 
 echo "activating assembly conda environment..."
 unset PYTHONPATH
-source /home/lab101/anaconda3/etc/profile.d/conda.sh
+source ~/path/to/micromamba/etc/profile.d/conda.sh
 conda activate assembly
 echo
 
