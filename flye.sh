@@ -16,8 +16,8 @@ set -e
 
 echo "activating bench_assm micromamba environment..."
 unset PYTHONPATH
-source /storage/users/cnoonan22/micromamba/etc/profile.d/mamba.sh
-micromamba activate /storage/users/cnoonan22/micromamba/envs/bench_assm
+source ~/path/to/micromamba/etc/profile.d/mamba.sh
+micromamba activate bench_assm
 echo
 
 # Creating sub-directories
